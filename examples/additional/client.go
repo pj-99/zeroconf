@@ -20,7 +20,7 @@ var (
 // 	return true
 // }
 
-func main() {
+func makeQuery(txt []string) *dns.Msg {
 	// Create a new DNS message
 	m := new(dns.Msg)
 	m.Id = dns.Id()
@@ -42,9 +42,13 @@ func main() {
 			Class:  dns.ClassINET,
 			Ttl:    255,
 		},
-		Txt: []string{"a=3", "b=5"},
+		Txt: txt,
 	}
 	m.Extra = append(m.Extra, txtRR)
+	return m;
+}
+
+func main() {
 
 	// Query
 	resolver, err := zeroconf.NewResolver(nil)
@@ -81,10 +85,22 @@ func main() {
 		log.Println("No more entries.")
 	}(msgCh)
 
-	err = resolver.Query(ctx, m, msgCh)
+	// msg will not be response 
+	// since the server only response when needToResponse=true
+	msg := makeQuery([]string{"a=1", "b=5"})
+
+	err = resolver.Query(ctx, msg, msgCh)
 
 	if err != nil {
-		log.Fatalln("Failed to query:", err.Error())
+		log.Fatalln("Failed to query msg1:", err.Error())
+	}
+
+	msg2 := makeQuery([]string{"a=3", "b=5", "needToResponse=true"})
+
+	err = resolver.Query(ctx, msg2, msgCh)
+
+	if err != nil {
+		log.Fatalln("Failed to query msg2:", err.Error())
 	}
 
 	<-ctx.Done()
