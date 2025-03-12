@@ -135,6 +135,26 @@ func (r *Resolver) Lookup(ctx context.Context, instance, service, domain string,
 	return nil
 }
 
+// Low level query
+func (r *Resolver) Query(ctx context.Context, msg *dns.Msg, msgCh chan *dns.Msg) error {
+		
+	// start listening for responses
+	// msgCh := make(chan *dns.Msg, 32)
+	if r.c.ipv4conn != nil {
+		go r.c.recv(ctx, r.c.ipv4conn, msgCh)
+	}
+	if r.c.ipv6conn != nil {
+		go r.c.recv(ctx, r.c.ipv6conn, msgCh)
+	}
+
+	// Send query
+	if err := r.c.sendQuery(msg); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // defaultParams returns a default set of QueryParams.
 func defaultParams(service string) *lookupParams {
 	return newLookupParams("", service, "local", false, make(chan *ServiceEntry))
