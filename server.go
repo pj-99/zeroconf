@@ -141,6 +141,11 @@ const (
 	qClassCacheFlush uint16 = 1 << 15
 )
 
+// Custom additional handler
+type AdditionalHandler interface {
+	Handle(rr *dns.Msg, resp *dns.Msg) error
+}
+
 // Server structure encapsulates both IPv4/IPv6 UDP connections
 type Server struct {
 	service  *ServiceEntry
@@ -153,6 +158,13 @@ type Server struct {
 	shutdownEnd    sync.WaitGroup
 	isShutdown     bool
 	ttl            uint32
+
+	// additional question and answer handler
+	addtionalHandler AdditionalHandler
+}
+
+func (s *Server) SetAdditionalHandler(handler AdditionalHandler) {
+	s.addtionalHandler = handler
 }
 
 // Constructs server structure
@@ -317,6 +329,11 @@ func (s *Server) handleQuery(query *dns.Msg, ifIndex int, from net.Addr) error {
 			// log.Printf("[ERR] zeroconf: failed to handle question %v: %v", q, err)
 			continue
 		}
+		
+		if s.addtionalHandler != nil {
+			s.addtionalHandler.Handle(query, &resp)
+		}
+
 		// Check if there is an answer
 		if len(resp.Answer) == 0 {
 			continue
