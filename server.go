@@ -388,7 +388,6 @@ func (s *Server) handleQuestion(q dns.Question, resp *dns.Msg, query *dns.Msg, i
 	default:
 		// handle matching subtype query
 		for _, subtype := range s.service.Subtypes {
-			subtype = fmt.Sprintf("%s._sub.%s", subtype, s.service.ServiceName())
 			if q.Name == subtype {
 				s.composeBrowsingAnswers(resp, ifIndex)
 				if isKnownAnswer(resp, query) {
