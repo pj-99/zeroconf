@@ -163,11 +163,11 @@ type Server struct {
 	ttl            uint32
 
 	// additional question and answer handler
-	addtionalHandler AdditionalHandler
+	additionalHandler AdditionalHandler
 }
 
 func (s *Server) SetAdditionalHandler(handler AdditionalHandler) {
-	s.addtionalHandler = handler
+	s.additionalHandler = handler
 }
 
 // Constructs server structure
@@ -333,11 +333,11 @@ func (s *Server) handleQuery(query *dns.Msg, ifIndex int, from net.Addr) error {
 			continue
 		}
 		
-		if s.addtionalHandler != nil {
-			if !s.addtionalHandler.CheckIsMatch(query) {
+		if s.additionalHandler != nil {
+			if !s.additionalHandler.CheckIsMatch(query) {
 				continue;
 			}
-			s.addtionalHandler.Handle(query, &resp)
+			s.additionalHandler.Handle(query, &resp)
 		}
 
 		// Check if there is an answer
