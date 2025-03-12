@@ -143,7 +143,10 @@ const (
 
 // Custom additional handler
 type AdditionalHandler interface {
+	// Handle incoming query and update response
 	Handle(rr *dns.Msg, resp *dns.Msg) error
+	// Check if the query is match
+	CheckIsMatch(rr *dns.Msg) bool
 }
 
 // Server structure encapsulates both IPv4/IPv6 UDP connections
@@ -160,11 +163,11 @@ type Server struct {
 	ttl            uint32
 
 	// additional question and answer handler
-	addtionalHandler AdditionalHandler
+	additionalHandler AdditionalHandler
 }
 
 func (s *Server) SetAdditionalHandler(handler AdditionalHandler) {
-	s.addtionalHandler = handler
+	s.additionalHandler = handler
 }
 
 // Constructs server structure
@@ -330,8 +333,11 @@ func (s *Server) handleQuery(query *dns.Msg, ifIndex int, from net.Addr) error {
 			continue
 		}
 		
-		if s.addtionalHandler != nil {
-			s.addtionalHandler.Handle(query, &resp)
+		if s.additionalHandler != nil {
+			if !s.additionalHandler.CheckIsMatch(query) {
+				continue;
+			}
+			s.additionalHandler.Handle(query, &resp)
 		}
 
 		// Check if there is an answer

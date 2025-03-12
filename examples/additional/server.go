@@ -28,6 +28,20 @@ func parseTxtToInt(t string, prefix string, dest *int) error {
 	return nil
 }
 
+func (h *SumHandler) CheckIsMatch(query *dns.Msg) bool {
+	for _, rr := range query.Extra {
+		if txt, ok := rr.(*dns.TXT); ok {
+			for _, t := range txt.Txt {
+				// Some logic to check if the query is matched
+				if strings.HasPrefix(t, "needToResponse=true") {
+					return true
+				}
+			}
+		}
+	}
+	return false;
+}
+
 func(h *SumHandler) Handle(query *dns.Msg, resp *dns.Msg) error {
 	var a, b int
 	var hasA, hasB bool
