@@ -436,6 +436,19 @@ func (s *Server) composeBrowsingAnswers(resp *dns.Msg, ifIndex int) {
 	}
 	resp.Answer = append(resp.Answer, ptr)
 
+	for _, subtype := range s.service.Subtypes {
+		resp.Answer = append(resp.Answer,
+			&dns.PTR{
+				Hdr: dns.RR_Header{
+					Name:   subtype,
+					Rrtype: dns.TypePTR,
+					Class:  dns.ClassINET,
+					Ttl:    s.ttl,
+				},
+				Ptr: s.service.ServiceInstanceName(),
+			})
+	}
+
 	txt := &dns.TXT{
 		Hdr: dns.RR_Header{
 			Name:   s.service.ServiceInstanceName(),
